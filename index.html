@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Obaro Labs — Business Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="grain"></div>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="brand">
+      <div class="brand-mark">OL</div>
+      <div class="brand-text">
+        <span class="brand-name">Obaro Labs</span>
+        <span class="brand-sub">Business Calculator</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="header-badge">Internal Tool · Confidential</div>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+        <span class="theme-icon sun">☀</span>
+        <span class="theme-icon moon">☽</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="main">
+
+  <!-- HERO METRICS -->
+  <section class="hero-metrics" id="heroMetrics">
+    <div class="metric-hero">
+      <div class="metric-hero-label">Monthly gross</div>
+      <div class="metric-hero-value" id="hGross">$0</div>
+    </div>
+    <div class="metric-hero accent">
+      <div class="metric-hero-label">Your take-home / mo</div>
+      <div class="metric-hero-value" id="hTake">$0</div>
+    </div>
+    <div class="metric-hero">
+      <div class="metric-hero-label">Annual net each</div>
+      <div class="metric-hero-value" id="hAnnual">$0</div>
+    </div>
+    <div class="metric-hero">
+      <div class="metric-hero-label">MRR (recurring)</div>
+      <div class="metric-hero-value" id="hMRR">$0</div>
+    </div>
+  </section>
+
+  <!-- TABS -->
+  <nav class="tabs" role="tablist">
+    <button class="tab-btn active" data-tab="clients" role="tab" aria-selected="true">Clients</button>
+    <button class="tab-btn" data-tab="recurring" role="tab" aria-selected="false">Recurring</button>
+    <button class="tab-btn" data-tab="taxes" role="tab" aria-selected="false">Taxes</button>
+    <button class="tab-btn" data-tab="annual" role="tab" aria-selected="false">Annual</button>
+    <button class="tab-btn" data-tab="costs" role="tab" aria-selected="false">Cost margins</button>
+    <button class="tab-btn" data-tab="scenario" role="tab" aria-selected="false">Scenarios</button>
+  </nav>
+
+  <!-- CLIENTS TAB -->
+  <div class="tab-panel active" id="tab-clients" role="tabpanel">
+    <div class="panel-layout">
+      <div class="panel-left">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Client builder</h2>
+            <button class="btn-ghost" id="addClientBtn">+ Add client</button>
+          </div>
+          <div class="client-controls">
+            <div class="ctrl-inline">
+              <label class="ctrl-label">Active clients</label>
+              <input type="range" min="1" max="20" value="5" id="clientCount" class="slider">
+              <span class="ctrl-val" id="clientCountVal">5</span>
+            </div>
+            <button class="btn-secondary" id="rerollBtn">↺ Randomize mix</button>
+          </div>
+          <div class="client-list" id="clientList"></div>
+        </div>
+      </div>
+
+      <div class="panel-right">
+        <div class="card">
+          <h2 class="card-title">Monthly snapshot</h2>
+          <div class="stat-stack">
+            <div class="stat-row">
+              <span class="stat-label">Gross revenue</span>
+              <span class="stat-val" id="sGross">$0</span>
+            </div>
+            <div class="stat-row deduct">
+              <span class="stat-label">Delivery costs</span>
+              <span class="stat-val red" id="sCosts">−$0</span>
+            </div>
+            <div class="stat-row total">
+              <span class="stat-label">Gross profit</span>
+              <span class="stat-val" id="sProfit">$0</span>
+            </div>
+            <div class="stat-row deduct">
+              <span class="stat-label">Estimated taxes (~30%)</span>
+              <span class="stat-val red" id="sTax">−$0</span>
+            </div>
+            <div class="stat-row total highlight">
+              <span class="stat-label">Net take-home</span>
+              <span class="stat-val green" id="sNet">$0</span>
+            </div>
+          </div>
+          <div class="founder-split">
+            <div class="founder-card kevin">
+              <div class="founder-name">Kevin Okinedo</div>
+              <div class="founder-title">CEO · 50%</div>
+              <div class="founder-amount" id="fKevin">$0</div>
+            </div>
+            <div class="founder-card nicholas">
+              <div class="founder-name">Nicholas Bryant</div>
+              <div class="founder-title">CTO · 50%</div>
+              <div class="founder-amount" id="fNicholas">$0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Revenue by type</h2>
+          <canvas id="revenueTypeChart" height="180" role="img" aria-label="Donut chart of revenue by service type"></canvas>
+          <div class="chart-legend" id="revLegend"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECURRING TAB -->
+  <div class="tab-panel" id="tab-recurring" role="tabpanel">
+    <div class="panel-layout">
+      <div class="panel-left">
+        <div class="card">
+          <h2 class="card-title">Recurring revenue engine</h2>
+          <p class="card-desc">This is where real wealth gets built. Every slider represents clients paying you every month — whether you do new work or not.</p>
+
+          <div class="input-group">
+            <label class="input-label">AI Care Plan clients</label>
+            <div class="ctrl-inline">
+              <input type="range" min="0" max="20" value="3" id="rCare" class="slider">
+              <span class="ctrl-val" id="rCareVal">3</span>
+            </div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Avg Care Plan rate ($/mo)</label>
+            <div class="ctrl-inline">
+              <input type="range" min="500" max="2500" value="1200" step="50" id="rCareAmt" class="slider">
+              <span class="ctrl-val" id="rCareAmtVal">$1,200</span>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div class="input-group">
+            <label class="input-label">Marketing retainer clients</label>
+            <div class="ctrl-inline">
+              <input type="range" min="0" max="20" value="2" id="rMkt" class="slider">
+              <span class="ctrl-val" id="rMktVal">2</span>
+            </div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Avg marketing rate ($/mo)</label>
+            <div class="ctrl-inline">
+              <input type="range" min="500" max="2500" value="1000" step="50" id="rMktAmt" class="slider">
+              <span class="ctrl-val" id="rMktAmtVal">$1,000</span>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div class="input-group">
+            <label class="input-label">Web retainer clients</label>
+            <div class="ctrl-inline">
+              <input type="range" min="0" max="10" value="1" id="rWeb" class="slider">
+              <span class="ctrl-val" id="rWebVal">1</span>
+            </div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Avg web retainer ($/mo)</label>
+            <div class="ctrl-inline">
+              <input type="range" min="300" max="1500" value="500" step="50" id="rWebAmt" class="slider">
+              <span class="ctrl-val" id="rWebAmtVal">$500</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-right">
+        <div class="metrics-grid-3">
+          <div class="metric-card">
+            <div class="metric-label">Monthly recurring (MRR)</div>
+            <div class="metric-value green" id="rMRR">$0</div>
+            <div class="metric-sub">every month guaranteed</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Annual recurring (ARR)</div>
+            <div class="metric-value" id="rARR">$0</div>
+            <div class="metric-sub">12-month baseline</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Business valuation (3× ARR)</div>
+            <div class="metric-value" id="rVal">$0</div>
+            <div class="metric-sub">what you could sell for</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">12-month recurring growth</h2>
+          <canvas id="recurringChart" height="200" role="img" aria-label="Line chart of recurring revenue growth over 12 months"></canvas>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Recurring breakdown</h2>
+          <div class="stat-stack">
+            <div class="stat-row">
+              <span class="stat-label">Care plan revenue/mo</span>
+              <span class="stat-val green" id="rCareRev">$0</span>
+            </div>
+            <div class="stat-row deduct">
+              <span class="stat-label">Care plan costs/mo</span>
+              <span class="stat-val red" id="rCareCost">$0</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Marketing revenue/mo</span>
+              <span class="stat-val green" id="rMktRev">$0</span>
+            </div>
+            <div class="stat-row deduct">
+              <span class="stat-label">Marketing costs/mo</span>
+              <span class="stat-val red" id="rMktCost">$0</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Web retainer revenue/mo</span>
+              <span class="stat-val green" id="rWebRev">$0</span>
+            </div>
+            <div class="stat-row total highlight">
+              <span class="stat-label">Net recurring profit/mo</span>
+              <span class="stat-val green" id="rNetMo">$0</span>
+            </div>
+            <div class="stat-row total">
+              <span class="stat-label">Each founder monthly (after tax)</span>
+              <span class="stat-val green" id="rEachMo">$0</span>
+            </div>
+            <div class="stat-row total">
+              <span class="stat-label">Each founder annually (after tax)</span>
+              <span class="stat-val green" id="rEachYr">$0</span>
+            </div>
+          </div>
+          <div class="insight-box" id="rInsight"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAXES TAB -->
+  <div class="tab-panel" id="tab-taxes" role="tabpanel">
+    <div class="panel-layout">
+      <div class="panel-left">
+        <div class="card">
+          <h2 class="card-title">Tax calculator</h2>
+          <p class="card-desc">Georgia LLC · Self-employed · Estimated figures. Always consult a CPA.</p>
+          <div class="input-group">
+            <label class="input-label">Annual gross revenue</label>
+            <div class="input-dollar">
+              <span>$</span>
+              <input type="number" id="taxIncome" value="120000" min="0" step="1000" class="input-field">
+            </div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Business expenses (deductible)</label>
+            <div class="input-dollar">
+              <span>$</span>
+              <input type="number" id="taxExpenses" value="18000" min="0" step="500" class="input-field">
+            </div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Filing status</label>
+            <select id="taxStatus" class="select-field">
+              <option value="single">Single</option>
+              <option value="married">Married filing jointly</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label class="input-label">State</label>
+            <select id="taxState" class="select-field">
+              <option value="GA">Georgia (5.49%)</option>
+              <option value="TX">Texas (0% — no income tax)</option>
+              <option value="FL">Florida (0% — no income tax)</option>
+              <option value="NY">New York (6.85%)</option>
+              <option value="CA">California (9.3%)</option>
+            </select>
+          </div>
+          <div class="warn-box">
+            <strong>Set aside 30% every payment</strong> for quarterly estimated taxes. Due dates: Jan 15 · Apr 15 · Jun 15 · Sep 15. Missing these triggers IRS penalties.
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-right">
+        <div class="card">
+          <h2 class="card-title">Full tax breakdown</h2>
+          <div class="stat-stack">
+            <div class="stat-row">
+              <span class="stat-label">Gross annual revenue</span>
+              <span class="stat-val" id="txGross">$0</span>
+            </div>
+            <div class="stat-row deduct">
+              <span class="stat-label">Business deductions</span>
+              <span class="stat-val red" id="txDeduct">−$0</span>
+            </div>
+            <div class="stat-row total">
+              <span class="stat-label">Net profit (taxable)</span>
+              <span class="stat-val" id="txNet">$0</span>
+            </div>
+            <div class="stat-row deduct">
+              <span class="stat-label">Self-employment tax (15.3%)</span>
+              <span class="stat-val red" id="txSE">−$0</span>
+            </div>
+            <div class="stat-row deduct">
+              <span class="stat-label">SE tax deduction (50%)</span>
+              <span class="stat-val green" id="txSEDed">+$0</span>
+            </div>
+            <div class="stat-row deduct">
+              <span class="stat-label">Federal income tax</span>
+              <span class="stat-val red" id="txFed">−$0</span>
+            </div>
+            <div class="stat-row deduct">
+              <span class="stat-label">State income tax</span>
+              <span class="stat-val red" id="txState">−$0</span>
+            </div>
+            <div class="stat-row total">
+              <span class="stat-label">Total tax burden</span>
+              <span class="stat-val red" id="txTotal">−$0</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Effective tax rate</span>
+              <span class="stat-val" id="txRate">0%</span>
+            </div>
+            <div class="stat-row total highlight">
+              <span class="stat-label">Annual net income</span>
+              <span class="stat-val green" id="txTakeHome">$0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="metrics-grid-2">
+          <div class="metric-card">
+            <div class="metric-label">Kevin's annual take-home</div>
+            <div class="metric-value" id="txKevin">$0</div>
+            <div class="metric-sub">50% after all taxes</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Nicholas's annual take-home</div>
+            <div class="metric-value green" id="txNicholas">$0</div>
+            <div class="metric-sub">50% after all taxes</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Quarterly tax schedule</h2>
+          <div class="quarter-grid">
+            <div class="quarter-card">
+              <div class="quarter-label">Q4 (prior yr)</div>
+              <div class="quarter-date">Jan 15</div>
+              <div class="quarter-amount" id="q1">$0</div>
+            </div>
+            <div class="quarter-card">
+              <div class="quarter-label">Q1</div>
+              <div class="quarter-date">Apr 15</div>
+              <div class="quarter-amount" id="q2">$0</div>
+            </div>
+            <div class="quarter-card">
+              <div class="quarter-label">Q2</div>
+              <div class="quarter-date">Jun 15</div>
+              <div class="quarter-amount" id="q3">$0</div>
+            </div>
+            <div class="quarter-card">
+              <div class="quarter-label">Q3</div>
+              <div class="quarter-date">Sep 15</div>
+              <div class="quarter-amount" id="q4">$0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Common deductions checklist</h2>
+          <div class="deductions-list">
+            <div class="ded-item"><span class="ded-check">✓</span><span class="ded-name">Home office (dedicated space)</span><span class="ded-est">$1,200–$3,600/yr</span></div>
+            <div class="ded-item"><span class="ded-check">✓</span><span class="ded-name">Business software & tools</span><span class="ded-est">$1,284–$2,500/yr</span></div>
+            <div class="ded-item"><span class="ded-check">✓</span><span class="ded-name">Internet & phone (business %)</span><span class="ded-est">$600–$1,800/yr</span></div>
+            <div class="ded-item"><span class="ded-check">✓</span><span class="ded-name">Professional development</span><span class="ded-est">$500–$2,000/yr</span></div>
+            <div class="ded-item"><span class="ded-check">✓</span><span class="ded-name">Legal & accounting fees</span><span class="ded-est">$1,000–$5,000/yr</span></div>
+            <div class="ded-item"><span class="ded-check">✓</span><span class="ded-name">API costs (OpenAI / Anthropic)</span><span class="ded-est">Fully deductible</span></div>
+            <div class="ded-item"><span class="ded-check">✓</span><span class="ded-name">Business meals (50%)</span><span class="ded-est">Keep all receipts</span></div>
+            <div class="ded-item"><span class="ded-check">✓</span><span class="ded-name">Health insurance premiums</span><span class="ded-est">100% deductible</span></div>
+            <div class="ded-item"><span class="ded-check">✓</span><span class="ded-name">SEP-IRA contributions</span><span class="ded-est">Up to 25% of net income</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ANNUAL TAB -->
+  <div class="tab-panel" id="tab-annual" role="tabpanel">
+    <div class="panel-layout">
+      <div class="panel-left">
+        <div class="card">
+          <h2 class="card-title">Annual projection builder</h2>
+          <p class="card-desc">Model how your income grows as you close more clients across the year.</p>
+
+          <div class="input-group">
+            <label class="input-label">One-time projects per month</label>
+            <div class="ctrl-inline">
+              <input type="range" min="0" max="10" value="2" id="aOneTime" class="slider">
+              <span class="ctrl-val" id="aOneTimeVal">2</span>
+            </div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Avg one-time project value</label>
+            <div class="ctrl-inline">
+              <input type="range" min="500" max="9000" value="3500" step="250" id="aOneTimeVal2" class="slider">
+              <span class="ctrl-val" id="aOneTimeVal2Label">$3,500</span>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div class="input-group">
+            <label class="input-label">New recurring clients / month</label>
+            <div class="ctrl-inline">
+              <input type="range" min="0" max="5" value="1" id="aNewRecurring" class="slider">
+              <span class="ctrl-val" id="aNewRecurringVal">1</span>
+            </div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Avg recurring contract ($/mo)</label>
+            <div class="ctrl-inline">
+              <input type="range" min="500" max="3000" value="1200" step="100" id="aRecurringAmt" class="slider">
+              <span class="ctrl-val" id="aRecurringAmtVal">$1,200</span>
+            </div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Monthly churn rate</label>
+            <div class="ctrl-inline">
+              <input type="range" min="0" max="20" value="5" step="1" id="aChurn" class="slider">
+              <span class="ctrl-val" id="aChurnVal">5%</span>
+            </div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Delivery cost % of revenue</label>
+            <div class="ctrl-inline">
+              <input type="range" min="5" max="30" value="14" step="1" id="aCostPct" class="slider">
+              <span class="ctrl-val" id="aCostPctVal">14%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-right">
+        <div class="metrics-grid-2" style="margin-bottom:1rem;">
+          <div class="metric-card">
+            <div class="metric-label">Year-end annual revenue</div>
+            <div class="metric-value" id="annRevenue">$0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Year-end MRR</div>
+            <div class="metric-value green" id="annMRR">$0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Annual net each founder</div>
+            <div class="metric-value green" id="annEach">$0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Year-end client count</div>
+            <div class="metric-value" id="annClients">0</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Monthly revenue forecast</h2>
+          <canvas id="annualChart" height="220" role="img" aria-label="Bar chart of monthly revenue over 12 months"></canvas>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Year summary</h2>
+          <div class="stat-stack">
+            <div class="stat-row"><span class="stat-label">Total one-time revenue</span><span class="stat-val" id="annOTTotal">$0</span></div>
+            <div class="stat-row"><span class="stat-label">Total recurring revenue</span><span class="stat-val amber" id="annRTotal">$0</span></div>
+            <div class="stat-row total"><span class="stat-label">Total gross revenue</span><span class="stat-val" id="annGross">$0</span></div>
+            <div class="stat-row deduct"><span class="stat-label">Total delivery costs</span><span class="stat-val red" id="annCosts">−$0</span></div>
+            <div class="stat-row deduct"><span class="stat-label">Total taxes (est.)</span><span class="stat-val red" id="annTax">−$0</span></div>
+            <div class="stat-row total highlight"><span class="stat-label">Annual net (company)</span><span class="stat-val green" id="annNet">$0</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COST MARGINS TAB -->
+  <div class="tab-panel" id="tab-costs" role="tabpanel">
+    <div class="two-col-grid">
+      <div class="card">
+        <h2 class="card-title">Service margin table</h2>
+        <p class="card-desc">Real delivery costs per service. Every dollar here comes out before you pocket anything.</p>
+        <div class="margin-table-wrap">
+          <table class="margin-table">
+            <thead>
+              <tr>
+                <th>Service</th>
+                <th>Client pays</th>
+                <th>Delivery cost</th>
+                <th>Margin</th>
+              </tr>
+            </thead>
+            <tbody id="marginTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">Delivery cost breakdown</h2>
+        <p class="card-desc">What each delivery dollar pays for.</p>
+        <div class="cost-categories">
+          <div class="cost-cat">
+            <div class="cost-cat-header">AI & API infrastructure</div>
+            <div class="cost-item"><span>OpenAI GPT-4o usage</span><span class="cost-range red">$50–$200/mo</span></div>
+            <div class="cost-item"><span>Anthropic Claude API</span><span class="cost-range red">$30–$150/mo</span></div>
+            <div class="cost-item"><span>Azure / Google Cloud AI</span><span class="cost-range red">$20–$100/mo</span></div>
+            <div class="cost-item"><span>Vector DB (Pinecone)</span><span class="cost-range red">$25–$70/mo</span></div>
+          </div>
+          <div class="cost-cat">
+            <div class="cost-cat-header">Communications</div>
+            <div class="cost-item"><span>Twilio phone number</span><span class="cost-range red">$1–$2/mo</span></div>
+            <div class="cost-item"><span>Twilio call minutes</span><span class="cost-range red">$0.02/min</span></div>
+            <div class="cost-item"><span>Twilio SMS</span><span class="cost-range red">$0.0079/msg</span></div>
+            <div class="cost-item"><span>Avg apt complex/mo</span><span class="cost-range amber">$80–$180</span></div>
+          </div>
+          <div class="cost-cat">
+            <div class="cost-cat-header">Automation infrastructure</div>
+            <div class="cost-item"><span>Zapier Professional</span><span class="cost-range red">$73/mo shared</span></div>
+            <div class="cost-item"><span>Make (alternative)</span><span class="cost-range red">$29–$99/mo</span></div>
+            <div class="cost-item"><span>Database (Supabase)</span><span class="cost-range red">$25–$50/mo</span></div>
+          </div>
+          <div class="cost-cat">
+            <div class="cost-cat-header">Obaro Labs internal tools</div>
+            <div class="cost-item"><span>Notion Plus</span><span class="cost-range">$16/mo</span></div>
+            <div class="cost-item"><span>Slack Pro</span><span class="cost-range">$30/mo</span></div>
+            <div class="cost-item"><span>Google Workspace</span><span class="cost-range">$12/mo</span></div>
+            <div class="cost-item"><span>Framer (hosting)</span><span class="cost-range">$20/mo</span></div>
+            <div class="cost-item"><span>Zapier (own)</span><span class="cost-range">$29/mo</span></div>
+            <div class="cost-item total"><span><strong>Total overhead</strong></span><span class="cost-range red"><strong>~$107/mo</strong></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCENARIOS TAB -->
+  <div class="tab-panel" id="tab-scenario" role="tabpanel">
+    <div class="card" style="margin-bottom:1rem;">
+      <h2 class="card-title">Revenue scenarios</h2>
+      <p class="card-desc">Compare conservative, realistic, and optimistic growth paths side by side.</p>
+    </div>
+
+    <div class="scenario-grid">
+      <div class="scenario-card conservative">
+        <div class="scenario-badge">Conservative</div>
+        <div class="scenario-title">Slow & steady</div>
+        <div class="scenario-desc">1–2 clients/mo, mostly audits and small builds</div>
+        <div class="scenario-stats" id="scConservative"></div>
+      </div>
+      <div class="scenario-card realistic">
+        <div class="scenario-badge">Realistic</div>
+        <div class="scenario-title">On track</div>
+        <div class="scenario-desc">3–5 clients/mo, mix of builds and retainers</div>
+        <div class="scenario-stats" id="scRealistic"></div>
+      </div>
+      <div class="scenario-card optimistic">
+        <div class="scenario-badge">Optimistic</div>
+        <div class="scenario-title">Crushing it</div>
+        <div class="scenario-desc">6–10 clients/mo, large builds + strong recurring</div>
+        <div class="scenario-stats" id="scOptimistic"></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:1rem;">
+      <h2 class="card-title">12-month scenario comparison</h2>
+      <canvas id="scenarioChart" height="260" role="img" aria-label="Line chart comparing three revenue growth scenarios over 12 months"></canvas>
+      <div class="chart-legend" id="scenLegend"></div>
+    </div>
+
+    <div class="card" style="margin-top:1rem;">
+      <h2 class="card-title">Key milestones</h2>
+      <div class="milestones">
+        <div class="milestone">
+          <div class="milestone-icon">🎯</div>
+          <div class="milestone-info">
+            <div class="milestone-title">First $1,000 month</div>
+            <div class="milestone-desc">2–3 website audits or 1 small marketing package</div>
+          </div>
+          <div class="milestone-when">Week 3–4</div>
+        </div>
+        <div class="milestone">
+          <div class="milestone-icon">🚀</div>
+          <div class="milestone-info">
+            <div class="milestone-title">First $5,000 month</div>
+            <div class="milestone-desc">1 AI build + 2 retainer clients</div>
+          </div>
+          <div class="milestone-when">Month 2–3</div>
+        </div>
+        <div class="milestone">
+          <div class="milestone-icon">💰</div>
+          <div class="milestone-info">
+            <div class="milestone-title">$10,000 MRR</div>
+            <div class="milestone-desc">5–6 care plan / retainer clients locked in</div>
+          </div>
+          <div class="milestone-when">Month 4–6</div>
+        </div>
+        <div class="milestone">
+          <div class="milestone-icon">👥</div>
+          <div class="milestone-info">
+            <div class="milestone-title">First hire trigger</div>
+            <div class="milestone-desc">$15k+ MRR — bring in a sales or web dev hire</div>
+          </div>
+          <div class="milestone-when">Month 5–8</div>
+        </div>
+        <div class="milestone">
+          <div class="milestone-icon">🏆</div>
+          <div class="milestone-info">
+            <div class="milestone-title">$50,000/yr each founder</div>
+            <div class="milestone-desc">Consistent recurring + 2–3 builds/month</div>
+          </div>
+          <div class="milestone-when">Month 8–12</div>
+        </div>
+        <div class="milestone">
+          <div class="milestone-icon">🌟</div>
+          <div class="milestone-info">
+            <div class="milestone-title">$100,000/yr each founder</div>
+            <div class="milestone-desc">10+ retainer clients + strong referral pipeline</div>
+          </div>
+          <div class="milestone-when">Year 2</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <span>Obaro Labs LLC · Internal Use Only · Atlanta, Georgia</span>
+    <span>All figures are estimates · Consult a CPA for tax advice</span>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
